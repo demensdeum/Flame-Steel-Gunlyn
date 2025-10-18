@@ -6,8 +6,13 @@
       "noImplicitReturns": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
-      "target": "ES2017",
-      "lib": ["es2019", "dom"]
+      "target": "ES2020",
+      "lib": ["es2020", "dom", "dom.iterable"],
+      "moduleResolution": "bundler",
+      "types": [
+        "three",
+        "@webgpu/types"
+      ]
     },
     "include": [
       "src/**/*.ts"
