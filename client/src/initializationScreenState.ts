@@ -34,6 +34,8 @@ export class InitializationScreenState implements State,
         context: Context
     )
     {
+        debugPrint(this.authorizeController)
+        debugPrint(InGameState)
         this.name = name
         this.context = context
 
@@ -55,25 +57,17 @@ export class InitializationScreenState implements State,
             }
         )
 
-        this.context.sceneController.addModelAt(
-            "kokeshi",
-            "com.demensdeum.kokeshi",
-            0,
-            -1,
-            -4,
-            0,
-            0,
-            0,
-            true,
-        )
+        this.context.sceneController.addModelAt({
+            name: "kokeshi",
+            modelName: "com.demensdeum.kokeshi",
+            position: new GameVector3({x: 0, y: -1, z: -4}),
+            rotation: new GameVector3({x: 0, y: 0, z: 0}),
+        })
+
         this.context.sceneController.objectPlayAnimation(
             "kokeshi",
             "Плоскость.004|Scene"
         )
-    }
-
-    private hideGeolocationPreloader() {
-        this.context.sceneController.removeCssObjectWithName("geolocationLoadingDiv")
     }
 
     private showGeolocationPreloader() {
@@ -92,17 +86,17 @@ export class InitializationScreenState implements State,
                     width: 2,
                     height: 2
                 },
-                position: new GameVector3(
-                        0,
-                        0,
-                        -5
-                ),
-                rotation: GameVector3.zero(),
-                scale: new GameVector3(
-                    0.01,
-                    0.01,
-                    0.01
-                ),
+                position: new GameVector3({
+                        x: 0,
+                        y: 0,
+                        z: -5
+                }),
+                rotation: new GameVector3({x: 0, y: 0, z: 0}),
+                scale: new GameVector3({
+                    x: 0.01,
+                    y: 0.01,
+                    z: 0.01
+                }),
                 shadows: {
                     receiveShadow: false,
                     castShadow: false
@@ -141,28 +135,6 @@ export class InitializationScreenState implements State,
         }
     }
 
-    geolocationControllerDidGetPosition(_: GeolocationControllerInterface, position: GameGeolocationPosition): void {
-        this.outputPositon = position
-        this.authorizeController.authorizeIfNeeded()       
-    }
-
-    geolocationControllerGeolocationDidReceiveError(_: GeolocationControllerInterface, error: string): void {
-        _alert({text: error, okCallback: ()=>{}})
-    }
-
-    geolocationControllerGeolocationDidReceiveGeolocationOnce(_: GeolocationControllerInterface, __: GameGeolocationPosition): void {
-    }
-
-    geolocationControllerGeolocationPermissionDenied(_: GeolocationControllerInterface): void {
-        this.hideGeolocationPreloader()
-        _alert({
-                text:_t("GEOLOCATION_ACCESS_DENIED"),
-                okCallback: ()=>{
-                    GameUtils.gotoWiki({locale: this.context.translator.locale})
-                }
-            })
-    }
-
     serverInfoControllerDidFetchInfo(
         _: ServerInfoController,
         entries: ServerInfoEntry[]
@@ -186,8 +158,7 @@ export class InitializationScreenState implements State,
             return
         }
 
-        this.showGeolocationPreloader()        
-        this.geolocationController.trackPosition()
+        this.showGeolocationPreloader()
     }
 
     authorizeControllerDidAuthorize(
@@ -197,50 +168,8 @@ export class InitializationScreenState implements State,
         if (heroUUID) {
             this.outputHeroUUID = heroUUID
             debugPrint(this.outputHeroUUID)
-            if (this.outputPositon) {
-                const position = this.outputPositon
-                const gotoInGameState = () => {
-                    this.context.sceneController.removeAllSceneObjectsExceptCamera()                    
-                    const inGameState = new InGameState(
-                    {
-                        name: "InGameState",
-                        context: this.context,
-                        dataFetchType: this.dataFetchType,
-                        heroUUIDEntity: heroUUID,
-                        geolocationController: this.geolocationController,
-                        geolocationPosition: position
-                    }
-                )
-        
-                // @ts-ignore
-                document.global_gameplay_inGameState = inGameState
-                this.context.transitionTo(inGameState)
-                return                        
-                }
-                if (window.localStorage.getItem("gameplayStartInfo") != "YES") {
-                    window.localStorage.setItem("gameplayStartInfo", "YES")
-                    this.hideGeolocationPreloader()
-                    _alert({
-                        text: _t("LOCATION_GOT_WELCOME_MESSAGE"),
-                        okCallback: gotoInGameState
-                    })
-                } 
-                else {
-                    gotoInGameState()
-                }                 
-            }
-            else {
-                raiseCriticalError("No output position!")
-                debugger
-                return
-            }
-        }
-        else {
-            _alert({
-                text: "No heroUUID in cookie!",
-                okCallback: ()=>{GameUtils.gotoWiki({locale:this.context.translator.locale})}
-            })
-            return
+        } else {
+            raiseCriticalError("No output heroUUID!")
         }
     }
 

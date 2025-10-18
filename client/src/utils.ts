@@ -1,5 +1,3 @@
-import { float } from "./types.js"
-
 export class Utils {
     public static showHtmlElement(
         args: {

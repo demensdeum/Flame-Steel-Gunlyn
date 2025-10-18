@@ -9,26 +9,10 @@ import { SceneObject } from "./sceneObject.js"
 
 import * as dat from "dat.gui"
 import { Names } from "./names.js"
-import { ControlsDataSource } from "./playerControlsDataSource.js"
-import { ControlsDelegate } from "./controlsDelegate.js"
-import { SimplePhysicsController } from "./simplePhysicsController.js"
-import { SimplePhysicsControllerDelegate } from "./simplePhysicsControllerDelegate.js"
-import { PhysicsControllerDelegate } from "./physicsControllerDelegate.js"
-import { PhysicsControllerCollision } from "./physicsControllerCollision.js"
-import { PhysicsControllerCollisionDirection } from "./physicsControllerCollisionDirection.js"
 import { debugPrint, raiseCriticalError } from "./runtime.js"
 import { float } from "./types.js"
-import { Controls } from "./controls.js"
 import { Paths } from "./paths.js"
-import { WeatherControllerDelegate } from "./weatherControllerDelegate.js"
-import { WeatherController } from "./weatherController.js"
 import { int } from "./types.js"
-import { SceneObjectCommandTeleport } from "./sceneObjectCommandTeleport.js"
-import { SceneObjectCommandIdle } from "./sceneObjectCommandIdle.js"
-import { DecorControlsDataSource } from "./decorControlsDataSource.js"
-import { DecorControls } from "./decorControls.js"
-import { SceneObjectCommand } from "./sceneObjectCommand.js"
-import { SceneObjectCommandTranslate } from "./sceneObjectCommandTranslate.js"
 import { GameSettings } from "./gameSettings.js"
 import { ObjectsPickerController } from "./objectsPickerController.js"
 import { ObjectsPickerControllerDelegate } from "./objectsPickerControllerDelegate.js"
@@ -39,26 +23,17 @@ import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js"
 import { GameVector3 } from "./gameVector3.js"
 import { GameCssObject3D } from "./gameCssObject3D.js"
 
-const gui = new dat.GUI({ autoPlace: false });
-var moveGUIElement = document.querySelector('.moveGUI');
-var guiDomElement = gui.domElement;
-moveGUIElement?.appendChild(guiDomElement);
+const gui = new dat.GUI({ autoPlace: false })
+var moveGUIElement = document.querySelector('.moveGUI')
+var guiDomElement = gui.domElement
+moveGUIElement?.appendChild(guiDomElement)
 
-export class SceneController implements 
-                                        ControlsDataSource, 
-                                        ControlsDelegate,
-                                        PhysicsControllerDelegate,
-                                        SimplePhysicsControllerDelegate,
-                                        WeatherControllerDelegate,
-                                        DecorControlsDataSource,
-                                        ObjectsPickerControllerDelegate {
+export class SceneController implements ObjectsPickerControllerDelegate {
 
-    public static readonly itemSize: number = 1;
-    public static readonly carSize: number = 1;
-    public static readonly roadSegmentSize: number = 2;
-    public static readonly skyboxPositionDiff: number = 0.5;
-
-    private userObjectName: string = ""
+    public static readonly itemSize: number = 1
+    public static readonly carSize: number = 1
+    public static readonly roadSegmentSize: number = 2
+    public static readonly skyboxPositionDiff: number = 0.5
     private currentSkyboxName?: String | null
 
     private stepCounter: int = 0
@@ -68,43 +43,33 @@ export class SceneController implements
     private css3DRendererBottom: CSS3DRenderer
     private renderer: THREE.WebGLRenderer
     private css3DRendererTop: CSS3DRenderer
-    private texturesToLoad: THREE.MeshStandardMaterial[] = [];
+    private texturesToLoad: THREE.MeshStandardMaterial[] = []
 
-    private textureLoader: THREE.TextureLoader = new THREE.TextureLoader();
-    private pmremGenerator: THREE.PMREMGenerator;
+    private textureLoader: THREE.TextureLoader = new THREE.TextureLoader()
+    private pmremGenerator: THREE.PMREMGenerator
 
-    private clock = new THREE.Clock();
-    private animationContainers: { [key: string]: AnimationContainer } = {}; 
+    private clock = new THREE.Clock()
+    private animationContainers: { [key: string]: AnimationContainer } = {}
 
-    private objects: { [key: string]: SceneObject } = {};
-    private objectsUUIDs: { [key: string]: SceneObject } = {};
-    private commands: { [key: string]: SceneObjectCommand } = {};
+    private objects: { [key: string]: SceneObject } = {}
+    private objectsUUIDs: { [key: string]: SceneObject } = {}
 
-    private loadingPlaceholderTexture: any;
+    private loadingPlaceholderTexture: any
 
-    private physicsController: PhysicsController;
     private objectsPickerController: ObjectsPickerController
-
-    private canMoveForward: boolean = false;
-    private canMoveBackward: boolean = false;
-    private canMoveLeft: boolean = false;
-    private canMoveRight: boolean = false;
 
     private readonly wireframeRenderer = false
 
-    public gameSettings: GameSettings;
+    public gameSettings: GameSettings
 
-    private flyMode: boolean = false;
+    private flyMode: boolean = false
 
-    private weatherController?: WeatherController;
-
-    public physicsEnabled: boolean;
     public delegate: SceneControllerDelegate | null = null
 
     private highQuality: boolean = false
     private shadowsEnabled: boolean = true
 
-    private cssObjects3D: { [key: string]: GameCssObject3D } = {};
+    private cssObjects3D: { [key: string]: GameCssObject3D } = {}
 
     private debugControls: OrbitControls
 
@@ -113,24 +78,11 @@ export class SceneController implements
     constructor(args: {
         canvas: HTMLCanvasElement,
         gameSettings: GameSettings,
-        flyMode: boolean = false
+        flyMode: boolean
     }) {
-        this.physicsEnabled = physicsEnabled
-        this.gameSettings = gameSettings
-        this.flyMode = flyMode
-        this.physicsController = physicsController
-        this.physicsController.delegate = this
-
-        if (
-            this.flyMode && 
-            this.physicsController instanceof SimplePhysicsController
-        ) {
-            this.physicsController.enabled = false
-        }
-
-        if (physicsController instanceof SimplePhysicsController) {
-            (physicsController as SimplePhysicsController).simplePhysicsControllerDelegate = this
-        }
+        this.gameSettings = args.gameSettings
+        this.flyMode = args.flyMode
+        debugPrint(this.flyMode)
 
         this.loadingPlaceholderTexture = this.textureLoader.load(
             Paths.texturePath(
@@ -153,8 +105,6 @@ export class SceneController implements
         "NONE",
         "NONE",
         this.camera,
-        true,
-        null,
         new Date().getTime()
     );
 
@@ -165,7 +115,7 @@ export class SceneController implements
     document.querySelector("#css-canvas-bottom")?.appendChild(this.css3DRendererBottom.domElement)
 
     this.renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
+        canvas: args.canvas,
         antialias: true,
         alpha: true
     })
@@ -263,267 +213,13 @@ export class SceneController implements
         return window.innerHeight
     }
 
-    physicControllerRequireApplyPosition(
-        objectName: string,
-        _: PhysicsController,
-        position: THREE.Vector3
-    ): void {
-        this.sceneObject(objectName).threeObject.position.x = position.x;
-        this.sceneObject(objectName).threeObject.position.y = position.y;
-        this.sceneObject(objectName).threeObject.position.z = position.z;
-    }
-
-    physicsControllerDidDetectFreeSpace(
-        _: PhysicsController,
-        __: SceneObject,
-        direction: PhysicsControllerCollisionDirection
-    ): void {
-        switch (direction) {
-            case PhysicsControllerCollisionDirection.Down:
-                break
-            case PhysicsControllerCollisionDirection.Front:
-                this.canMoveForward = true
-            case PhysicsControllerCollisionDirection.Back:
-                this.canMoveBackward = true
-            case PhysicsControllerCollisionDirection.Left:
-                this.canMoveLeft = true
-            case PhysicsControllerCollisionDirection.Right:
-                this.canMoveRight = true
-        }
-    }
-
-    physicsControllerDidDetectDistance(
-        _: PhysicsController,
-        collision: PhysicsControllerCollision
-    ): void { 
-
-        if (this.flyMode) {
-            this.canMoveForward = true;
-            this.canMoveBackward = true;
-            this.canMoveLeft = true;
-            this.canMoveRight = true;
-        }
-
-        const alice = collision.alice;
-        const bob = collision.bob;
-        const direction = collision.direction;
-        const distance = collision.distance;
-
-        if (
-            alice.name == this.userObjectName &&
-            bob.name == "Map" &&
-            direction == PhysicsControllerCollisionDirection.Front
-        ) {
-            this.canMoveForward = distance > 0.3;
-        }     
-        
-        if (
-            alice.name == this.userObjectName &&
-            bob.name == "Map" &&
-            direction == PhysicsControllerCollisionDirection.Back
-        ) {
-            this.canMoveBackward = distance > 0.3;
-        }
-        
-        if (
-            alice.name == this.userObjectName &&
-            bob.name == "Map" &&
-            direction == PhysicsControllerCollisionDirection.Left
-        ) {
-            this.canMoveLeft = distance > 0.3;
-        }         
-        
-        if (
-            alice.name == this.userObjectName &&
-            bob.name == "Map" &&
-            direction == PhysicsControllerCollisionDirection.Right
-        ) {
-            this.canMoveRight = distance > 0.3;
-        }            
-    }
-
-    simplePhysicControllerRequireToAddArrowHelperToScene(
-        _: SimplePhysicsController,
-        arrowHelper: any
-    ) {
-        this.scene.add(arrowHelper);
-    }
-
-    simplePhysicsControllerRequireToDeleteArrowHelperFromScene(
-        _: SimplePhysicsController,
-        arrowHelper: any
-    ): void {
-        this.scene.remove(arrowHelper);
-    }
-    
-    public decorControlsDidRequestCommandWithName(
-        _: DecorControls,
-        commandName: string
-    ): SceneObjectCommand
-    {
-        if (commandName in this.commands) {
-            return this.commands[commandName]
-        }
-        else {
-            raiseCriticalError("SceneController DecorControlsDataSource Error: No command with name " + commandName);
-            return new SceneObjectCommandIdle("Error Placeholder", 0);
-        }
-    }
-
     public isObjectWithNameOlderThan(
         name: string,
         date: int
     )
     {
         const objectChangeDate = this.sceneObject(name).changeDate
-
-        if (name.startsWith("Udod")) {
-            debugPrint(objectChangeDate + " < " + date)
-        }
-
         return objectChangeDate < date
-    }
-
-    public controlsQuaternionForObject(
-        _: Controls,
-        objectName: string
-    ): any
-    {
-        const sceneObject = this.sceneObject(
-            objectName
-        );
-
-        return sceneObject.threeObject.quaternion;
-    }
-
-    controlsRequireJump(
-        _: Controls,
-        objectName: string
-    ) {
-        const sceneObject = this.sceneObject(objectName);
-        this.physicsController.requireJump(sceneObject);
-    }
-
-    public controlsRequireObjectTranslate(
-        _: Controls,
-        objectName: string,
-        x: float,
-        y: float,
-        z: float
-    ) {
-        this.translateObject(
-            objectName,
-            x,
-            y,
-            z
-        )
-    }
-
-    public controlsRequireObjectRotation(
-        _: Controls,
-        objectName: string, 
-        euler: any
-    ) {
-        const sceneObject = this.sceneObject(
-            objectName
-        )
-        sceneObject.threeObject.quaternion.setFromEuler(euler)
-        sceneObject.changeDate = Utils.timestamp()
-    }
-
-    controlsCanMoveLeftObject(
-        _: Controls,
-        __: string
-    ) {
-        return this.canMoveLeft;
-    }
-
-    controlsCanMoveRightObject(
-        _: Controls,
-        __: string
-    ) {
-        return this.canMoveRight;
-    }
-
-    controlsCanMoveForwardObject(
-        _: Controls,
-        __: string
-    ) {
-        return this.canMoveForward;
-    }
-
-    controlsCanMoveBackwardObject(
-        _: Controls,
-        __: string
-    ) {
-        return this.canMoveBackward;
-    }
-
-    weatherControllerDidRequireToAddInstancedMeshToScene(
-        _: WeatherController,
-        instancedMesh: any
-    ): void {
-        this.scene.add(instancedMesh);
-    }
-
-    public addCommand(
-        name: string,
-        type: string,
-        time: int,
-        x: float,
-        y: float,
-        z: float,
-        rX: float,
-        rY: float,
-        rZ: float,
-        nextCommandName: string
-    )
-    {
-        const position = new THREE.Vector3(
-            x,
-            y,
-            z
-        )
-        const rotation = new THREE.Vector3(
-            rX,
-            rY,
-            rZ
-        )
-        if (type == "teleport") {
-            const command = new SceneObjectCommandTeleport(
-                name,
-                time, 
-                position,
-                rotation,
-                nextCommandName
-            )
-            this.commands[name] = command
-            return command
-        }
-        else if (type == "translate") {
-            const translate = position
-            const command = new SceneObjectCommandTranslate(
-                name,
-                time,
-                translate,
-                nextCommandName
-            )
-            this.commands[name] = command
-            return command
-        }
-        
-        raiseCriticalError("Unknown type for command parser: " + type);
-
-        return new SceneObjectCommandIdle(
-            name,
-            time
-        )
-    }
-
-    public commandWithName(
-        name: string
-    ) {
-        return this.commands[name]
     }
 
     public addText(
@@ -583,30 +279,11 @@ export class SceneController implements
             return
         }
 
-        const delta = this.clock.getDelta();
-        this.controlsStep(
-            delta
-        );
-        if (this.physicsController) {
-            if (this.physicsController instanceof SimplePhysicsController) {
-                this.physicsController.enabled = this.physicsEnabled
-            }
-            this.physicsController.step(delta)
-        }
-        this.weatherController?.step(delta)
+        const delta = this.clock.getDelta()
+
         this.animationsStep(delta)
         this.render()
         this.updateUI()
-    }
-
-    private controlsStep(
-        delta: float
-    ) {
-        Object.keys(this.objects).forEach(key => {
-            const sceneObject = this.objects[key];
-            const controls = sceneObject.controls;
-            controls?.step(delta);  
-        })
     }
 
     public addCssPlaneObject(
@@ -749,8 +426,6 @@ export class SceneController implements
         this.objectsUUIDs[sceneObject.uuid] = sceneObject
         this.objects[sceneObject.name] = sceneObject
         this.scene.add(sceneObject.threeObject)
-
-        this.physicsController.addSceneObject(sceneObject)
         this.objectsPickerController.addSceneObject(sceneObject)
     }
 
@@ -802,11 +477,11 @@ export class SceneController implements
                     width: 2,
                     height: 2
                 },
-                position: new GameVector3(
-                        0,
-                        0,
-                        -8
-                ),
+                position: new GameVector3({
+                        x: 0,
+                        y: 0,
+                        z: -8
+                }),
                 rotation: new GameVector3({x: 0, y: 0, z: 0}),
                 scale: new GameVector3({x: 0.01, y: 0.01, z: 0.01 }),
                 shadows: {
@@ -901,9 +576,9 @@ export class SceneController implements
                 width: 2,
                 height: 2
             },
-            position: new GameVector3(0, 0, -8),
-            rotation: GameVector3.zero(),
-            scale: new GameVector3(0.01, 0.01, 0.01),
+            position: new GameVector3({x: 0, y: 0, z: -8}),
+            rotation: new GameVector3({x: 0, y: 0, z: 0}),
+            scale: new GameVector3({x: 0.01, y: 0.01, z: 0.01}),
             shadows: {
                 receiveShadow: false,
                 castShadow: false
@@ -996,9 +671,9 @@ export class SceneController implements
                 width: 2,
                 height: 2
             },
-            position: new GameVector3(0, 0, -8),
-            rotation: GameVector3.zero(),
-            scale: new GameVector3(0.01, 0.01, 0.01),
+            position: new GameVector3({ x: 0, y: 0, z: -8}),
+            rotation: new GameVector3({ x: 0, y: 0, z: 0 }),
+            scale: new GameVector3({ x: 0.01, y: 0.01, z: 0.01}),
             shadows: {
                 receiveShadow: false,
                 castShadow: false
@@ -1066,8 +741,6 @@ export class SceneController implements
             "",
             "",
             box,
-            false,
-            null,
             new Date().getTime()
         )
         this.objects[name] = buttonSceneObject
@@ -1093,12 +766,8 @@ export class SceneController implements
         for (const i in gui.__controllers) {
             gui.remove(gui.__controllers[i]);
         }
-        Object.keys(this.objects).map(k => {
-            delete this.commands[k]
-        })
         Object.keys(this.cssObjects3D).map(k => {
             this.removeCssObjectWithName(k)
-            delete this.commands[k]
         })
 
         this.scene.background = null
@@ -1111,7 +780,6 @@ export class SceneController implements
             debugger
             return
         }
-        this.physicsController.removeSceneObject(sceneObject)
         this.objectsPickerController.removeSceneObject(sceneObject)
         this.scene.remove(sceneObject.threeObject)
         delete this.objects[name]
@@ -1175,23 +843,40 @@ export class SceneController implements
             name: string,
             modelName: string,
             position: GameVector3,
-            rotation?: GameVector3 = new GameVector3({x: 1.0, y: 1.0, z: 1.0}),
-            scale?: GameVector3 = new GameVector3({x: 1.0, y: 1.0, z: 1.0}),
-            boxSize?: number = 1.0,
-            onLoad?: (() => void) = () => {},
-            transparency?: { enabled: boolean, opacity: float } = { enabled: false, opacity: 1.0},
+            rotation?: GameVector3,
+            scale?: GameVector3,
+            boxSize?: number,
+            onLoad?: (() => void),
+            transparency?: { enabled: boolean, opacity: float },
         }
     ): void {
+        if (args.rotation == null) {
+             args.rotation = new GameVector3({x: 1.0, y: 1.0, z: 1.0})
+        }
+        if (args.scale == null) {
+            args.scale = new GameVector3({x: 1.0, y: 1.0, z: 1.0})
+        }
+        if (args.boxSize == null) {
+            args.boxSize = 1.0
+        }
+        if (args.onLoad == null) {
+            args.onLoad = () => {}
+        }
+        if (args.transparency == null) {
+            args.transparency = { enabled: false, opacity: 1.0}
+        }
+
+
         debugPrint("addModelAt");
 
         const boxGeometry = new THREE.BoxGeometry(
-            boxSize, 
-            boxSize, 
-            boxSize
+            args.boxSize,
+            args.boxSize,
+            args.boxSize
         )
 
         const boxMaterial = new THREE.MeshStandardMaterial({
-             color: color,
+             color: '0xFFFFFF',
              map: this.loadingPlaceholderTexture,
              transparent: true,             
              opacity: 0.7
@@ -1202,24 +887,24 @@ export class SceneController implements
             boxMaterial
         )
 
-        box.position.x = x
-        box.position.y = y
-        box.position.z = z
+        box.position.x = args.position.x
+        box.position.y = args.position.y
+        box.position.z = args.position.z
 
-        box.rotation.x = rX
-        box.rotation.y = rY
-        box.rotation.z = rZ
+        if (args.rotation) {
+            box.rotation.x = args.rotation.x
+            box.rotation.y = args.rotation.y
+            box.rotation.z = args.rotation.z
+        }
 
         const sceneController = this
 
         const sceneObject = new SceneObject(
-            name,
+            args.name,
             "Model",
             "NONE",
-            modelName,
+            args.modelName,
             box,
-            isMovable,
-            controls,
             new Date().getTime()
         )
         sceneController.addSceneObject(sceneObject)
@@ -1228,7 +913,7 @@ export class SceneController implements
         const dracoLoader = new DRACOLoader()
         dracoLoader.setDecoderPath('build/three/examples/jsm/libs/draco/')
         modelLoader.setDRACOLoader(dracoLoader)
-        const modelPath = Paths.modelPath(modelName)
+        const modelPath = Paths.modelPath(args.modelName)
 
         const self = this
 
@@ -1261,9 +946,9 @@ export class SceneController implements
                         mesh.castShadow = true
                         mesh.receiveShadow = true
                     }
-                    if (transparent) {
+                    if (args.transparency?.enabled) {
                         (<THREE.Material> mesh.material).transparent = true;
-                        (<THREE.Material> mesh.material).opacity = opacity
+                        (<THREE.Material> mesh.material).opacity = args.transparency.opacity
                     }
                     sceneObject.meshes.push(mesh)
                     if (sceneController.wireframeRenderer) {
@@ -1280,7 +965,9 @@ export class SceneController implements
             }
             
             debugPrint(`Model load success: ${modelPath}`)
-            successCallback();
+            if (args.onLoad) {
+                args.onLoad();
+            }
           }
 
           const onModelLoadingProgess = (_: any) => {
@@ -1383,8 +1070,6 @@ export class SceneController implements
             textureName,
             "NONE",
             box,
-            false,
-            null,
             new Date().getTime()
         );
         sceneObject.meshes.push(box)
@@ -1459,8 +1144,6 @@ export class SceneController implements
             textureName,
             "NONE",
             plane,
-            false,
-            null,
             new Date().getTime()
         )
         this.addSceneObject(sceneObject);
@@ -1538,22 +1221,6 @@ export class SceneController implements
             return this.sceneObject(name);
         }
         return object;
-    }
-
-    controlsRequireObjectTeleport(
-        _: Controls,
-        name: string,
-        x: number,
-        y: number,
-        z: number
-    ): void {
-        const sceneObject = this.sceneObject(
-            name
-        );
-
-        sceneObject.threeObject.position.x = x;
-        sceneObject.threeObject.position.y = y;
-        sceneObject.threeObject.position.z = z;
     }
 
     public translateObject(

@@ -48,23 +48,23 @@ export class MainMenuState implements State {
                     width: 2,
                     height: 2
                 },
-                position: GameVector3.zeroBut(
+                position: new GameVector3(
                     {   
                         x: 0,
                         y: 3,
                         z: -5
                     }
                 ),
-                rotation: new GameVector3(
-                    0,
-                    0,
-                    0,
-                ),
-                scale: new GameVector3(
-                    0.01,
-                    0.01,
-                    0.01
-                ),
+                rotation: new GameVector3({
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                }),
+                scale: new GameVector3({
+                    x: 0.01,
+                    y: 0.01,
+                    z: 0.01
+                }),
                 shadows: {
                     receiveShadow: false,
                     castShadow: false
@@ -95,23 +95,23 @@ export class MainMenuState implements State {
                     width: 2,
                     height: 2
                 },
-                position: GameVector3.zeroBut(
+                position: new GameVector3(
                     {   
                         x: 0,
                         y: 2,
                         z: -5
                     }
                 ),
-                rotation: new GameVector3(
-                    0,
-                    0,
-                    0,
-                ),
-                scale: new GameVector3(
-                    0.01,
-                    0.01,
-                    0.01
-                ),
+                rotation: new GameVector3({
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                }),
+                scale: new GameVector3({
+                    x: 0.01,
+                    y: 0.01,
+                    z: 0.01
+                }),
                 shadows: {
                     receiveShadow: false,
                     castShadow: false
