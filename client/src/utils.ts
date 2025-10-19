@@ -1,3 +1,5 @@
+import { int } from "./types.js"
+
 export class Utils {
     public static showHtmlElement(
         args: {
@@ -48,9 +50,9 @@ export class Utils {
         return Math.random() * max;
     }
 
-    public static randomBool() {
+    public static randomBool(factor: int = 50) {
         const random = Utils.randomInt(100)
-        const randomBool = random < 50  
+        const randomBool = random < factor
         return randomBool;
     }
 

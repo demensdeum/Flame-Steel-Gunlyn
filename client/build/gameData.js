@@ -1,3 +1,4 @@
+import { MapCell } from "./mapCell.js";
 export class GameData {
     constructor() {
         this.currentHealth = 100;
@@ -14,5 +15,6 @@ export class GameData {
         this.enemyMaxAttack = 4;
         this.enemyCurrentHealth = 2;
         this.enemyMaxHealth = 2;
+        this.currentMapCell = MapCell.generateMapCell({ fromDirection: 1 });
     }
 }

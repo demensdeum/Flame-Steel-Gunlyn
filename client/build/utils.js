@@ -29,9 +29,9 @@ export class Utils {
     static randomFloat(max) {
         return Math.random() * max;
     }
-    static randomBool() {
+    static randomBool(factor = 50) {
         const random = Utils.randomInt(100);
-        const randomBool = random < 50;
+        const randomBool = random < factor;
         return randomBool;
     }
     static radiansToAngle(radians) {
