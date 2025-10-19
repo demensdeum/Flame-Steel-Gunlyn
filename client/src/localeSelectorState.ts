@@ -13,12 +13,12 @@ export class LocaleSelectorState extends State implements SceneControllerDelegat
     private startDate = new Date()    
 
     initialize(): void {
-        const savedLocalization = window.localStorage.getItem("savedLocalization")
-        if (savedLocalization != null) {
-            this.context.translator.locale = savedLocalization
-            this.saveLocaleAndGoToInGameState()
-            return
-        }
+        // const savedLocalization = window.localStorage.getItem("savedLocalization")
+        // if (savedLocalization != null) {
+        //     this.context.translator.locale = savedLocalization
+        //     this.saveLocaleAndGoToInGameState()
+        //     return
+        // }
         this.context.sceneController.delegate = this
         this.context.sceneController.switchSkyboxIfNeeded(
             {
@@ -29,15 +29,15 @@ export class LocaleSelectorState extends State implements SceneControllerDelegat
 
         this.context.sceneController.addModelAt({
             name: "englishman",
-            modelName: "com.demensdeum.hero",
-            position: new GameVector3({x: 0.32, y: -0.35, z: -1.23}),
+            modelName: "com.demensdeum.croc1",
+            position: new GameVector3({x: 0.32, y: -0.35, z: -2.23}),
             rotation: new GameVector3({x: 0, y: Utils.degreesToRadians(120), z: 0}),
         })
 
         this.context.sceneController.addModelAt({
             name: "russian",
-            modelName: "com.demensdeum.cat.gray",
-            position: new GameVector3({x: -0.22, y: -0.35, z: -1.23}),
+            modelName: "com.demensdeum.cat1",
+            position: new GameVector3({x: -0.22, y: -0.35, z: -2.23}),
             rotation: new GameVector3({x: 0, y: Utils.degreesToRadians(200), z:0})
         })
 
