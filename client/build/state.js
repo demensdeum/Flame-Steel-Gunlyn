@@ -1,6 +1,6 @@
 export class State {
-    constructor(name, context) {
-        this.name = name;
-        this.context = context;
+    constructor(args) {
+        this.name = args.name;
+        this.context = args.context;
     }
 }

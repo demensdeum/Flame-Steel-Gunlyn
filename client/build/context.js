@@ -13,7 +13,10 @@ export class Context {
         this.soundPlayer = new SoundPlayer(0.7);
         this.debugEnabled = debugEnabled;
         this.gameData = new GameData();
-        this.state = new IdleState("Idle State", this);
+        this.state = new IdleState({
+            name: "Idle State",
+            context: this
+        });
         if (!this.canvas || this.canvas == undefined) {
             this.raiseCriticalError("1Canvas in NULL!!!!");
         }

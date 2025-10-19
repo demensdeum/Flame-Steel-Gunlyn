@@ -4,12 +4,12 @@ export abstract class State {
     public name: string
     context: Context
 
-    constructor(
+    constructor(args: {
         name: string,
         context: Context
-    ) {
-        this.name = name
-        this.context = context
+    }) {
+        this.name = args.name
+        this.context = args.context
     }
 
     abstract initialize(): void

@@ -1,10 +1,21 @@
 import { CompanyLogoState } from "./companyLogoState.js";
+import { InGameState } from "./inGameState.js";
 import { Context } from "./context.js";
+import { debugPrint } from "./runtime.js";
 function main(options = {}) {
     const debugEnabled = options["debugEnabled"] === "true";
     const context = new Context(debugEnabled);
-    const companyLogoState = new CompanyLogoState("CompanyLogo", context);
-    context.start(companyLogoState);
+    const companyLogoState = new CompanyLogoState({
+        name: "CompanyLogo",
+        context: context
+    });
+    debugPrint(companyLogoState);
+    const inGameState = new InGameState({
+        name: "InGameState",
+        context: context
+    });
+    const initialState = inGameState;
+    context.start(initialState);
     function step() {
         if (!context.isRunning) {
             return;

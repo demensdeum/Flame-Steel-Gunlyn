@@ -18,10 +18,10 @@ export class CompanyLogoState extends State {
         if (diffMilliseconds > this.switchMillisecondsTimeout) {
             Utils.hideHtmlElement({name:"companyLogoContainer"})
 
-            const localeSelectorState = new LocaleSelectorState(
-                "Locale Selector State",
-                this.context
-            )
+            const localeSelectorState = new LocaleSelectorState({
+                name: "Locale Selector State",
+                context: this.context
+            })
             // @ts-ignore
             document.global_gameplay_localeSelectorState = localeSelectorState
 
