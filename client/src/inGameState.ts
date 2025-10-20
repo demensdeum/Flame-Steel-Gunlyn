@@ -5,13 +5,15 @@ import { SceneControllerDelegate } from './sceneControllerDelegate.js'
 import { MapCell } from './mapCell.js'
 import { Utils } from './utils.js'
 import { int } from './types.js'
+import { GameDataRenderer } from './gameDataRenderer.js'
 
 export class InGameState extends State implements SceneControllerDelegate {
     private presentedPrompt = false
     private lastEnemyActionDate = 0
+    private gameDataRenderer: GameDataRenderer = new GameDataRenderer()
 
     initialize(): void {
-        debugPrint("Hello Flame Steel: Gunlyn: Initialize")
+        debugPrint("Initialize Flame Steel: Gunlyn: Initialize")
 
         this.context.sceneController.delegate = this
         this.context.sceneController.switchSkyboxIfNeeded(
@@ -22,11 +24,16 @@ export class InGameState extends State implements SceneControllerDelegate {
         )
     }
 
+    render(): void {
+        this.gameDataRenderer.render({gameData: this.context.gameData, sceneController: this.context.sceneController})
+    }
+
     step(): void {
         // debugPrint("Hello Flame Steel: Gunlyn: Step")
         this.presentCommandPromptIfNeeded()
         this.enemiesStep()
         this.reviveIfNeeded()
+        this.render()
     }
 
     doRevive(): void {

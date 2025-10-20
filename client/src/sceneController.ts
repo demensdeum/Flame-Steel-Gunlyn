@@ -1015,13 +1015,13 @@ export class SceneController implements ObjectsPickerControllerDelegate {
         }
     }
 
-    public addBoxAt(
+    private addBoxAt(
         name: string,
         x: number,
         y: number,
         z: number,
-        textureName: string = "com.demensdeum.failback",    
-        size: number = 1.0,            
+        textureName: string = "com.demensdeum.failback",
+        size: number = 1.0,
         color: number = 0xFFFFFF,
         transparent: boolean = false,
         opacity: number = 1.0
@@ -1030,15 +1030,15 @@ export class SceneController implements ObjectsPickerControllerDelegate {
         const texturePath = Paths.texturePath(textureName);
 
         const boxGeometry = new THREE.BoxGeometry(
-            size, 
-            size, 
+            size,
+            size,
             size
         )
 
         const material = new THREE.MeshStandardMaterial({
              color: color,
              map: this.loadingPlaceholderTexture,
-             transparent: transparent,             
+             transparent: transparent,
              opacity: opacity
         })
 
@@ -1056,8 +1056,8 @@ export class SceneController implements ObjectsPickerControllerDelegate {
             ),
             transparent: true,
             opacity: opacity
-       });        
-       this.texturesToLoad.push(newMaterial);        
+       });
+       this.texturesToLoad.push(newMaterial);
 
         const box = new THREE.Mesh(boxGeometry, material);
         box.position.x = x;
@@ -1075,79 +1075,6 @@ export class SceneController implements ObjectsPickerControllerDelegate {
         sceneObject.meshes.push(box)
         this.addSceneObject(sceneObject)
     }
-
-    public addPlaneAt(
-        name: string,
-        x: number,
-        y: number,
-        z: number,
-        width: number,
-        height: number,
-        textureName: string,
-        color: number = 0xFFFFFF,
-        resetDepthBuffer: boolean = false,
-        transparent: boolean = false,
-        opacity: number = 1.0,
-        receiveShadow: boolean = true
-    ): void {
-        debugPrint("addPlaneAt");
-        const texturePath = Paths.texturePath(textureName);
-        const planeGeometry = new THREE.PlaneGeometry(width, height);
-
-        const material = new THREE.MeshStandardMaterial({
-            color: color,
-            map: this.loadingPlaceholderTexture,
-            depthWrite: !resetDepthBuffer,
-            side: THREE.DoubleSide,
-            transparent: transparent,
-            opacity: opacity
-        });
-
-        const newMaterial = new THREE.MeshStandardMaterial({
-            color: color,
-            map: this.textureLoader.load(
-                texturePath,
-                (texture: THREE.Texture)=>{
-                    material.map = texture
-                    material.needsUpdate = true
-                },
-                (error: unknown)=>{
-                    console.log(`WUT! Error: ${error}`);
-                }),
-            depthWrite: !resetDepthBuffer,
-            side: THREE.DoubleSide,
-            transparent: transparent,
-            opacity: opacity
-        });
-        
-        if (newMaterial.map != null) {
-            this.texturesToLoad.push(newMaterial);
-            newMaterial.map.colorSpace = THREE.SRGBColorSpace;
-        }        
-
-        const plane = new THREE.Mesh(planeGeometry, material)
-        plane.position.x = x
-        plane.position.y = y
-        plane.position.z = z
-
-        if (this.shadowsEnabled) {
-            plane.receiveShadow = receiveShadow
-        }
-
-        if (resetDepthBuffer) {
-            plane.renderOrder = -1
-        }
-
-        const sceneObject = new SceneObject(
-            name,
-            "Plane",
-            textureName,
-            "NONE",
-            plane,
-            new Date().getTime()
-        )
-        this.addSceneObject(sceneObject);
-    }    
 
     objectsPickerControllerDidPickObject(
         _: ObjectsPickerController,

@@ -2,25 +2,31 @@ import { State } from './state.js';
 import { debugPrint } from './runtime.js';
 import { MapCell } from './mapCell.js';
 import { Utils } from './utils.js';
+import { GameDataRenderer } from './gameDataRenderer.js';
 export class InGameState extends State {
     constructor() {
         super(...arguments);
         this.presentedPrompt = false;
         this.lastEnemyActionDate = 0;
+        this.gameDataRenderer = new GameDataRenderer();
     }
     initialize() {
-        debugPrint("Hello Flame Steel: Gunlyn: Initialize");
+        debugPrint("Initialize Flame Steel: Gunlyn: Initialize");
         this.context.sceneController.delegate = this;
         this.context.sceneController.switchSkyboxIfNeeded({
             name: "com.demensdeum.blue.field",
             environmentOnly: false
         });
     }
+    render() {
+        this.gameDataRenderer.render({ gameData: this.context.gameData, sceneController: this.context.sceneController });
+    }
     step() {
         // debugPrint("Hello Flame Steel: Gunlyn: Step")
         this.presentCommandPromptIfNeeded();
         this.enemiesStep();
         this.reviveIfNeeded();
+        this.render();
     }
     doRevive() {
         this.context.gameData.currentHealth = this.context.gameData.maxHealth;

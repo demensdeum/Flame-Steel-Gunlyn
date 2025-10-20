@@ -705,48 +705,6 @@ export class SceneController {
         sceneObject.meshes.push(box);
         this.addSceneObject(sceneObject);
     }
-    addPlaneAt(name, x, y, z, width, height, textureName, color = 0xFFFFFF, resetDepthBuffer = false, transparent = false, opacity = 1.0, receiveShadow = true) {
-        debugPrint("addPlaneAt");
-        const texturePath = Paths.texturePath(textureName);
-        const planeGeometry = new THREE.PlaneGeometry(width, height);
-        const material = new THREE.MeshStandardMaterial({
-            color: color,
-            map: this.loadingPlaceholderTexture,
-            depthWrite: !resetDepthBuffer,
-            side: THREE.DoubleSide,
-            transparent: transparent,
-            opacity: opacity
-        });
-        const newMaterial = new THREE.MeshStandardMaterial({
-            color: color,
-            map: this.textureLoader.load(texturePath, (texture) => {
-                material.map = texture;
-                material.needsUpdate = true;
-            }, (error) => {
-                console.log(`WUT! Error: ${error}`);
-            }),
-            depthWrite: !resetDepthBuffer,
-            side: THREE.DoubleSide,
-            transparent: transparent,
-            opacity: opacity
-        });
-        if (newMaterial.map != null) {
-            this.texturesToLoad.push(newMaterial);
-            newMaterial.map.colorSpace = THREE.SRGBColorSpace;
-        }
-        const plane = new THREE.Mesh(planeGeometry, material);
-        plane.position.x = x;
-        plane.position.y = y;
-        plane.position.z = z;
-        if (this.shadowsEnabled) {
-            plane.receiveShadow = receiveShadow;
-        }
-        if (resetDepthBuffer) {
-            plane.renderOrder = -1;
-        }
-        const sceneObject = new SceneObject(name, "Plane", textureName, "NONE", plane, new Date().getTime());
-        this.addSceneObject(sceneObject);
-    }
     objectsPickerControllerDidPickObject(_, object) {
         debugPrint(`pick: ${object.name}`);
         if (this.delegate != null) {
