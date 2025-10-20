@@ -20,6 +20,28 @@ export class InGameState extends State {
         // debugPrint("Hello Flame Steel: Gunlyn: Step")
         this.presentCommandPromptIfNeeded();
         this.enemiesStep();
+        this.reviveIfNeeded();
+    }
+    doRevive() {
+        this.context.gameData.currentHealth = this.context.gameData.maxHealth;
+    }
+    reviveIfNeeded() {
+        if (this.context.gameData.currentHealth > 0) {
+            return;
+        }
+        debugPrint("Gunlyn is broken... Reviving");
+        this.doTeleport({ putEnemy: false });
+        this.doRevive();
+    }
+    doTeleport(args) {
+        if (args.putEnemy) {
+            this.putEnemyRandomly();
+        }
+        else {
+            this.context.gameData.enemyName = "NONE";
+        }
+        this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: 1 });
+        debugPrint("Teleported");
     }
     presentCommandPromptIfNeeded() {
         if (this.presentedPrompt == true) {
@@ -49,6 +71,10 @@ export class InGameState extends State {
         if (this.lastEnemyActionDate + 1000 + Utils.randomInt(2000) > Date.now()) {
             //debugPrint("Enemy waiting a cycle")
             return;
+        }
+        if (this.context.gameData.enemyCurrentHealth < 1) {
+            this.context.gameData.enemyName = "NONE";
+            debugPrint("Enemy is dead");
         }
         if (Utils.randomBool()) {
             const enemyDamage = this.context.gameData.enemyMinAttack + Utils.randomInt(this.context.gameData.enemyMaxAttack);
@@ -92,66 +118,58 @@ export class InGameState extends State {
         this.context.gameData.enemyMaxHealth = 2 + Utils.randomInt(5);
         this.context.gameData.enemyCurrentHealth = this.context.gameData.enemyMaxHealth;
     }
+    doHeal() {
+        if (this.context.gameData.healItemsCount > 0) {
+            this.context.gameData.healItemsCount -= 1;
+            this.context.gameData.currentHealth += 30;
+            if (this.context.gameData.currentHealth > this.context.gameData.maxHealth) {
+                this.context.gameData.currentHealth = this.context.gameData.maxHealth;
+            }
+        }
+        else {
+            debugPrint("CAN'T HEAL - NEED MORE HEALTH ITEMS");
+        }
+    }
+    doMove(args) {
+        const direction = args.direction;
+        if (direction < 0) {
+            return;
+        }
+        if (direction >= this.context.gameData.currentMapCell.frees.length) {
+            return;
+        }
+        const fromDirections = [2, 3, 0, 1];
+        if (this.context.gameData.currentMapCell.frees[direction] == true) {
+            this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: fromDirections[direction] });
+            this.giveSomethingRandomly();
+            this.putEnemyRandomly();
+        }
+        else {
+            debugPrint(`CAN'T MOVE DIRECTION ${direction} - THERE IS WALL`);
+        }
+    }
     handleCommand(command) {
         debugPrint(`handleCommand: ${command}`);
         if (command == "ATTACK") {
             this.context.gameData.enemyCurrentHealth -= this.context.gameData.maxAttack;
         }
         else if (command == "MOVE LEFT") {
-            if (this.context.gameData.currentMapCell.frees[0] == true) {
-                this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: 2 });
-                this.giveSomethingRandomly();
-                this.putEnemyRandomly();
-            }
-            else {
-                debugPrint("CAN'T MOVE LEFT!!! THERE IS WALL ON THE LEFT!!!");
-            }
+            this.doMove({ direction: 0 });
         }
         else if (command == "MOVE UP") {
-            if (this.context.gameData.currentMapCell.frees[1] == true) {
-                this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: 3 });
-                this.giveSomethingRandomly();
-                this.putEnemyRandomly();
-            }
-            else {
-                debugPrint("CAN'T MOVE UP!!! THERE IS WALL ON THE UP!!!");
-            }
+            this.doMove({ direction: 1 });
         }
         else if (command == "MOVE RIGHT") {
-            if (this.context.gameData.currentMapCell.frees[2] == true) {
-                this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: 0 });
-                this.giveSomethingRandomly();
-                this.putEnemyRandomly();
-            }
-            else {
-                debugPrint("CAN'T MOVE RIGHT!!! THERE IS WALL ON THE RIGHT!!!");
-            }
+            this.doMove({ direction: 2 });
         }
         else if (command == "MOVE DOWN") {
-            if (this.context.gameData.currentMapCell.frees[3] == true) {
-                this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: 1 });
-                this.giveSomethingRandomly();
-                this.putEnemyRandomly();
-            }
-            else {
-                debugPrint("CAN'T MOVE DOWN!!! THERE IS WALL ON THE DOWN!!!");
-            }
+            this.doMove({ direction: 3 });
         }
         else if (command == "HEAL") {
-            if (this.context.gameData.healItemsCount > 0) {
-                this.context.gameData.healItemsCount -= 1;
-                this.context.gameData.currentHealth += 30;
-                if (this.context.gameData.currentHealth > this.context.gameData.maxHealth) {
-                    this.context.gameData.currentHealth = this.context.gameData.maxHealth;
-                }
-            }
-            else {
-                debugPrint("CAN'T HEAL!!! NEED MORE HEALTH ITEMS!!!");
-            }
+            this.doHeal();
         }
         else if (command == "TELEPORT") {
-            this.context.gameData.currentMapCell = MapCell.generateMapCell({ fromDirection: 1 });
-            debugPrint("Teleported");
+            this.doTeleport({ putEnemy: Utils.randomBool() });
         }
     }
     sceneControllerDidPickSceneObjectWithName(controller, name) {
