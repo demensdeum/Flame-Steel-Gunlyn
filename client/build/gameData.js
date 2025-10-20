@@ -10,11 +10,11 @@ export class GameData {
         this.armorName = "CYBER_ARMOR";
         this.weaponName = "LASER_PISTOL";
         this.healItemsCount = 2;
-        this.enemyName = "CLANKER";
-        this.enemyMinAttack = 2;
-        this.enemyMaxAttack = 4;
-        this.enemyCurrentHealth = 2;
-        this.enemyMaxHealth = 2;
+        this.enemyName = "NONE";
+        this.enemyMinAttack = 0;
+        this.enemyMaxAttack = 0;
+        this.enemyCurrentHealth = 0;
+        this.enemyMaxHealth = 0;
         this.currentMapCell = MapCell.generateMapCell({ fromDirection: 1 });
     }
 }

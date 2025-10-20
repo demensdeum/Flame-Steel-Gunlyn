@@ -11,10 +11,10 @@ export class GameData {
     public armorName: string = "CYBER_ARMOR"
     public weaponName: string = "LASER_PISTOL"
     public healItemsCount: int = 2
-    public enemyName: string = "CLANKER"
-    public enemyMinAttack: int = 2
-    public enemyMaxAttack: int = 4
-    public enemyCurrentHealth: int = 2
-    public enemyMaxHealth: int = 2
+    public enemyName: string = "NONE"
+    public enemyMinAttack: int = 0
+    public enemyMaxAttack: int = 0
+    public enemyCurrentHealth: int = 0
+    public enemyMaxHealth: int = 0
     public currentMapCell: MapCell = MapCell.generateMapCell({fromDirection: 1})
 }
