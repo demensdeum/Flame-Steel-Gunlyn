@@ -10,7 +10,7 @@ export class InitializationScreenState {
     constructor(name, context) {
         this.authorizeController = new AuthorizeController(this);
         this.serverInfoController = new ServerInfoController(this);
-        this.dataFetchType = DataFetchType.DEFAULT;
+        this.dataFetchType = DataFetchType.JOYSTICK;
         this.trackCheckStarted = false;
         this.outputHeroUUID = "NONE";
         this.confirmationWindowShowed = false;

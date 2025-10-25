@@ -1,5 +1,6 @@
 export enum DataFetchType {
-    DEFAULT,
+    JOYSTICK,
+    GEOLOCATION,
     MOCK,
     MOCK_GEOLOCATION_ONLY
 }

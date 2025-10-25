@@ -23,7 +23,7 @@ export class InitializationScreenState implements State,
 
     private readonly authorizeController = new AuthorizeController(this)
     private readonly serverInfoController = new ServerInfoController(this)
-    private readonly dataFetchType: DataFetchType = DataFetchType.DEFAULT
+    private readonly dataFetchType: DataFetchType = DataFetchType.JOYSTICK
 
     private trackCheckStarted = false
     private outputHeroUUID = "NONE"
